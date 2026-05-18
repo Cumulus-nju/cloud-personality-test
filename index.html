@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>☁️ 云型人格测试 CTPI</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: system-ui, "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+  background: linear-gradient(180deg, #d4eaf7 0%, #e8f4f8 30%, #f5faff 60%, #fafafa 100%);
+  min-height: 100vh;
+  color: #2c3e50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+#app {
+  width: 100%;
+  max-width: 640px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+  padding: 40px 32px;
+  position: relative;
+  overflow: hidden;
+}
+#app::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(135,206,235,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+#app::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: -40px;
+  width: 140px; height: 140px;
+  background: radial-gradient(circle, rgba(240,160,80,0.10) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+#intro, #quiz, #result, #loading { position: relative; z-index: 1; }
+
+/* Intro */
+#intro { text-align: center; padding: 20px 0; }
+#intro .icon { font-size: 64px; margin-bottom: 16px; }
+#intro h1 { font-size: 28px; margin-bottom: 8px; color: #1a3a4a; }
+#intro .subtitle { font-size: 14px; color: #7f8c8d; margin-bottom: 24px; line-height: 1.6; }
+#intro .info { font-size: 13px; color: #95a5a6; margin-bottom: 32px; line-height: 1.8; }
+#intro .info span { color: #5a7a8a; font-weight: 600; }
+.btn {
+  display: inline-block;
+  padding: 14px 48px;
+  border: none; border-radius: 100px;
+  font-size: 16px; font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #fff;
+  background: linear-gradient(135deg, #5b9bd5 0%, #4a8bc2 100%);
+  box-shadow: 0 4px 16px rgba(91,155,213,0.3);
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(91,155,213,0.4); }
+.btn:active { transform: scale(0.98); }
+.btn.outline {
+  background: transparent; color: #5b9bd5;
+  border: 2px solid #5b9bd5; box-shadow: none;
+}
+.btn.outline:hover { background: rgba(91,155,213,0.06); }
+.btn.small { padding: 8px 24px; font-size: 14px; }
+
+/* Quiz */
+.progress-wrap {
+  background: #ecf0f1; border-radius: 100px;
+  height: 6px; margin-bottom: 28px;
+}
+.progress-bar {
+  height: 100%; border-radius: 100px;
+  background: linear-gradient(90deg, #5b9bd5, #7ec8e3);
+  transition: width 0.3s;
+}
+.question-num { font-size: 12px; color: #95a5a6; margin-bottom: 8px; }
+.question-text { font-size: 20px; line-height: 1.6; margin-bottom: 28px; color: #1a3a4a; font-weight: 500; }
+.options { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.opt-btn {
+  flex: 1; min-width: 56px;
+  padding: 14px 8px;
+  border: 2px solid #e0e6ed; border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  font-size: 13px; color: #5a6a7a;
+}
+.opt-btn:hover { border-color: #b0c8d8; background: #f8fafc; }
+.opt-btn.selected { border-color: #5b9bd5; background: #eef6fb; color: #4a8bc2; font-weight: 600; }
+.opt-btn .num { display: block; font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+.opt-btn .label { font-size: 11px; }
+.quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; }
+.quiz-nav .hint { font-size: 12px; color: #b0bec5; }
+
+/* Loading */
+#loading { text-align: center; padding: 40px 0; }
+#loading .cloud-anim { font-size: 48px; animation: float 2s ease-in-out infinite; }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+#loading p { margin-top: 16px; color: #7f8c8d; }
+
+/* Result */
+.type-header { text-align: center; margin-bottom: 28px; }
+.type-emoji { font-size: 72px; margin-bottom: 8px; }
+.type-name { font-size: 32px; font-weight: 700; color: #1a3a4a; }
+.type-subtitle { font-size: 16px; color: #7f8c8d; margin-top: 4px; }
+.type-tagline { font-size: 15px; color: #5a7a8a; margin-top: 8px; font-style: italic; }
+
+.result-sections { display: flex; flex-direction: column; gap: 16px; }
+.result-card {
+  background: #f8fafc; border-radius: 14px;
+  padding: 18px 20px; border: 1px solid #eef2f6;
+}
+.result-card h3 { font-size: 14px; color: #5a7a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.result-card p, .result-card li { font-size: 14px; line-height: 1.7; color: #3a4a5a; }
+.result-card ul { padding-left: 18px; }
+.result-card li { margin-bottom: 4px; }
+
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag {
+  padding: 6px 14px; border-radius: 100px;
+  font-size: 12px; font-weight: 500;
+  background: #eef6fb; color: #4a8bc2;
+}
+.tag.good { background: #e8f5e9; color: #388e3c; }
+.tag.bad { background: #fbe9e7; color: #d84315; }
+
+.mbti-ref { text-align: center; font-size: 13px; color: #95a5a6; margin-top: 12px; }
+
+.sec-type { text-align: center; margin-top: 16px; padding: 12px; background: #fafafa; border-radius: 12px; font-size: 13px; color: #7f8c8d; }
+.sec-type strong { color: #5a7a8a; }
+
+.result-actions { display: flex; gap: 12px; margin-top: 24px; justify-content: center; flex-wrap: wrap; }
+
+/* score bars */
+.score-list { margin-top: 8px; }
+.score-row { display: flex; align-items: center; margin-bottom: 6px; gap: 10px; }
+.score-row .s-name { width: 70px; font-size: 12px; color: #7f8c8d; text-align: right; flex-shrink: 0; }
+.score-row .s-bar-wrap { flex: 1; background: #ecf0f1; border-radius: 100px; height: 8px; }
+.score-row .s-bar { height: 100%; border-radius: 100px; background: #b0cfe0; transition: width 0.6s; }
+.score-row .s-bar.top { background: linear-gradient(90deg, #5b9bd5, #7ec8e3); }
+.score-row .s-val { width: 30px; font-size: 11px; color: #95a5a6; text-align: left; }
+
+/* detail toggle */
+.detail-toggle { text-align: center; margin-top: 12px; }
+.detail-toggle button { font-size: 12px; color: #95a5a6; background: none; border: none; cursor: pointer; text-decoration: underline; }
+
+/* Mobile */
+@media (max-width: 480px) {
+  #app { padding: 28px 18px; border-radius: 18px; }
+  .question-text { font-size: 18px; }
+  .opt-btn { padding: 12px 4px; }
+  .opt-btn .num { font-size: 16px; }
+  .opt-btn .label { font-size: 10px; }
+  .type-emoji { font-size: 56px; }
+  .type-name { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Intro Screen -->
+  <div id="intro">
+    <div class="icon">☁️</div>
+    <h1>云型人格测试</h1>
+    <p class="subtitle">Cloud Type Personality Inventory</p>
+    <p class="info">
+      基于 WMO 国际云图集的<span>十属云分类</span>，用天空的语言解读性格。<br>
+      共 <span>30 题</span>，约需 <span>3 分钟</span>。
+    </p>
+    <button class="btn" onclick="startQuiz()">开始测试</button>
+  </div>
+
+  <!-- Quiz Screen -->
+  <div id="quiz" style="display:none;">
+    <div class="progress-wrap"><div class="progress-bar" id="progress"></div></div>
+    <div class="question-num" id="qNum"></div>
+    <div class="question-text" id="qText"></div>
+    <div class="options" id="options"></div>
+    <div class="quiz-nav">
+      <span class="hint" id="navHint"></span>
+      <button class="btn small" id="nextBtn" style="display:none;" onclick="nextQuestion()">下一题 →</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" style="display:none;">
+    <div class="cloud-anim">☁️</div>
+    <p>正在计算你的云型……</p>
+  </div>
+
+  <!-- Result Screen -->
+  <div id="result" style="display:none;"></div>
+
+</div>
+
+<script>
+// ── Questions (30 items, 3 per type) ──
+const questions = [
+  // Ci 卷云
+  { text: "我经常沉浸在自己的精神世界里，以至于忘了周围发生的事。", type: "Ci" },
+  { text: "规则和条条框框让我感到束缚，我渴望自由。", type: "Ci" },
+  { text: "比起具体的技能，我对人生意义和哲学问题更感兴趣。", type: "Ci" },
+  // Cc 卷积云
+  { text: "我的文件、桌面、日程都有严格的分类和规划。", type: "Cc" },
+  { text: "做决定前，我需要收集足够信息，模糊的状态让我不安。", type: "Cc" },
+  { text: "发现逻辑错误或不精确的表述时，我很难忍住不指出来。", type: "Cc" },
+  // Cs 卷层云
+  { text: "我能敏锐察觉房间里的气氛变化，并下意识想缓和它。", type: "Cs" },
+  { text: "看到别人难过，我的情绪也会被深深牵动。", type: "Cs" },
+  { text: "在冲突中我往往选择退让来维持和谐，即使自己受点委屈。", type: "Cs" },
+  // Ac 高积云
+  { text: "我的兴趣变得很快，上个月痴迷的，这个月可能就没什么热情了。", type: "Ac" },
+  { text: "我对太多事情感到好奇，以至于很难在一个领域深耕下去。", type: "Ac" },
+  { text: "在朋友眼里，我什么都懂一点，但什么都不太精。", type: "Ac" },
+  // As 高层云
+  { text: "在讨论中我不急于发言，但一旦开口，通常已经想得很清楚了。", type: "As" },
+  { text: "我做决定很慢，但一旦做出就几乎不会反悔。", type: "As" },
+  { text: "遇到突发情况时，我是周围人中最先冷静下来的那个。", type: "As" },
+  // Sc 层积云
+  { text: "别人交代我的事，不需要提醒，我一定会按时完成。", type: "Sc" },
+  { text: "比起冒险和变革，我更喜欢稳定可预期的节奏。", type: "Sc" },
+  { text: "在团队里我不是最耀眼的，但别人会觉得&#34;有你在就放心&#34;。", type: "Sc" },
+  // St 层云
+  { text: "热闹的社交场合对我是一种消耗，独处才是我恢复能量的方式。", type: "St" },
+  { text: "我不追逐潮流和热门，守着自己喜欢的小世界就很满足。", type: "St" },
+  { text: "在群体中我常常是沉默的那一个，但我并不因此不自在。", type: "St" },
+  // Ns 雨层云
+  { text: "我很容易被艺术作品中的悲伤所触动。", type: "Ns" },
+  { text: "朋友常说我是很好的倾听者，愿意在我面前流露脆弱。", type: "Ns" },
+  { text: "创作（写作/绘画/音乐等）是我表达内心深处情感的主要出口。", type: "Ns" },
+  // Cu 积云
+  { text: "朋友们觉得有我在就不会冷场，我是那个带动气氛的人。", type: "Cu" },
+  { text: "我相信&#34;先做再说&#34;，过度思考只会让机会溜走。", type: "Cu" },
+  { text: "我的情绪来得快去得也快，不太会记仇。", type: "Cu" },
+  // Cb 积雨云
+  { text: "在群体中我倾向于主导方向，不太放心让别人做关键决定。", type: "Cb" },
+  { text: "我生气的时候，情绪的强度让周围人都能感受到。", type: "Cb" },
+  { text: "我对做成大事有强烈的渴望，平庸的日子让我不安。", type: "Cb" },
+];
+
+// ── Type Data ──
+const typeData = {
+  Ci: {
+    name: "卷云", sub: "天际旅人", emoji: "☁️",
+    family: "高云族 · 抽象思维者",
+    tagline: "活在精神世界里的人——对意义上瘾，对规矩过敏。",
+    overview: "卷云由高空冰晶组成，是大气中最\"孤独\"的云——不形成阴影，不参与降水，却最先感知远方的变化。卷云型人格也是如此：他们悬浮在理念的高空，不在意地面的琐碎，却总能率先察觉到时代的暗流。他们不是不合群，而是精神世界的引力太强。",
+    strengths: ["创造力出众，能提出让人耳目一新的视角","思想开放，对不同观念包容度高","直觉敏锐，善于感知尚未成形的趋势","独立性强，不依赖外部认可来确认自我"],
+    weaknesses: ["容易拖延——想太多而迟迟不行动","不切实际，有时忽略现实约束","难以做出长期承诺","情感表达偏弱，容易被误解为冷漠"],
+    careers: ["创作/艺术", "哲学/研究", "UX设计", "自由职业", "战略咨询"],
+    mbti: "INFP / ENFP",
+    color: "#7c8eb4"
+  },
+  Cc: {
+    name: "卷积云", sub: "秩序编织者", emoji: "📐",
+    family: "高云族 · 抽象思维者",
+    tagline: "大脑自带分类系统——靠规律和精确来理解世界。",
+    overview: "卷积云是高空中的规则鳞片，在冰晶的混沌世界里罕见地维持了秩序。卷积云型人格天生追求精确和正确——他们不是害怕混乱，而是真心觉得秩序更美。他们的世界像一张精心设计的蓝图，每个元素都有其位置和理由。",
+    strengths: ["组织能力极强，善于建立高效的系统","可靠精准，交付的成果让人放心","逻辑清晰，善于发现隐藏的模式和规律","审美敏锐，对\"正确\"和\"优雅\"有天然的判断力"],
+    weaknesses: ["过度追求完美，容易陷入\"分析瘫痪\"","对变化和不确定性适应较慢","有时显得挑剔，容易让他人感到压力","倾向于用规则替代灵活性"],
+    careers: ["编程/开发", "数据分析", "财务/审计", "编辑/出版", "项目管理"],
+    mbti: "ISTJ / ESTJ",
+    color: "#5b9bb5"
+  },
+  Cs: {
+    name: "卷层云", sub: "温柔面纱", emoji: "🌙",
+    family: "高云族 · 抽象思维者",
+    tagline: "像一层透明的薄纱覆盖天空——不发光，但能让别人的光折射成最美的晕。",
+    overview: "卷层云覆盖天空却几乎看不见自身，只在他人的光芒穿过时显现出日晕/月晕。卷层云型人格的核心是\"让他人发光\"——他们有极强的共情能力，像一层温柔的薄纱包裹着身边的人。他们通过关系来定义自我，是人际网络中最安静的粘合剂。",
+    strengths: ["共情力极强，能精准感知他人的情绪状态","善于调和矛盾，天然的和平缔造者","直觉深邃，能看到别人看不到的情感脉络","温柔而坚韧，表面柔和内心有主见"],
+    weaknesses: ["边界模糊，容易把他人的情绪当成自己的","倾向于回避冲突，有时压抑自身需求","可能过度自我牺牲","在需要强硬边界的环境中容易耗竭"],
+    careers: ["心理咨询", "教育", "调解/HR", "公益/非营利", "护理"],
+    mbti: "INFJ / ISFJ",
+    color: "#c4a0b8"
+  },
+  Ac: {
+    name: "高积云", sub: "多变诗人", emoji: "🎭",
+    family: "中云族 · 平衡实践者",
+    tagline: "永远在变形状的云——今天是羊群，明天是城堡，后天又成了浪花。",
+    overview: "高积云是天空中形态最多变的云，同一片天空中可以同时存在多种形态。高积云型人格被好奇心驱动——他们对世界有一种天然的趋近反应，新事物永远有趣。他们是天生的跨界者，在各种领域之间建立意想不到的联系。",
+    strengths: ["适应力极强，在什么环境都能快速融入","兴趣广泛，多才多艺","好奇心驱动，持续学习和探索","跨界思维，能在不同领域间建立新颖连接"],
+    weaknesses: ["容易三分钟热度，难以深耕","兴趣过于分散，难以做出取舍","计划性偏弱，容易半途而废","有时显得不够认真和投入"],
+    careers: ["创业", "产品经理", "媒体/记者", "自由职业", "咨询顾问"],
+    mbti: "ENTP / ENFP",
+    color: "#e8a050"
+  },
+  As: {
+    name: "高层云", sub: "沉静守望者", emoji: "🏔️",
+    family: "中云族 · 平衡实践者",
+    tagline: "最沉默的云，也是最稳的云——不说话，但什么都知道。",
+    overview: "高层云是均匀覆盖天空的灰色云层，不壮丽、不惊人，却以极致的稳定性和覆盖范围著称。高层云型人格是\"沉默的正确者\"——他们不急于表达，但判断力极准。他们的情绪像恒温器，外界风浪再大也几乎不偏离基线。",
+    strengths: ["战略思维清晰，能够穿透复杂问题","情绪极其稳定，危机中是最可靠的锚","判断精准，一旦做出很少需要修正","信守承诺，说到做到"],
+    weaknesses: ["不擅长表达自己，容易被忽视","显得过于保守和谨慎","在需要快速反应的场合可能偏慢","社交疏离，有时被误解为冷漠"],
+    careers: ["研究/学术", "工程/技术", "风险分析", "战略规划", "数据分析"],
+    mbti: "INTJ / INTP",
+    color: "#6b8a9e"
+  },
+  Sc: {
+    name: "层积云", sub: "可靠基石", emoji: "🛡️",
+    family: "低云族 · 务实行动者",
+    tagline: "不惊艳，但不可或缺——天空中最常见的云，也是最重要的背景。",
+    overview: "层积云覆盖了全球约20%的海洋表面，以群体方式呈现——每个云块清晰可辨，彼此紧密相连。层积云型人格是\"团队中最可靠的基石\"——他们不求耀眼，但求每件事都做到位。他们的力量在于持续而稳定的输出。",
+    strengths: ["极高可靠性，交代的事情一定完成","团队协作能力强，天然的配合者","情绪稳定，不急不躁","务实踏实，注重可执行性"],
+    weaknesses: ["缺乏野心，容易满足于现状","抗拒变化，对变革持谨慎态度","有时过于随大流，缺少个人声音","在需要创新和冒险的场合可能力不从心"],
+    careers: ["行政/运营", "护理/医疗", "财务/会计", "公职/教育", "物流/供应链"],
+    mbti: "ISFJ / ESFJ",
+    color: "#b8a080"
+  },
+  St: {
+    name: "层云", sub: "安静雾霭", emoji: "🌫️",
+    family: "低云族 · 务实行动者",
+    tagline: "世界上唯一触手可及的云——也是最低调的那一朵。",
+    overview: "层云是最低的云，常以雾的形式接触地面。它均匀无结构，安静地弥漫在世界的低处。层云型人格是\"主动选择了少\"的人——在过度刺激的时代，他们降低了对喧嚣的需求。他们的安静不是缺乏，而是一种充盈的自足。",
+    strengths: ["专注力极强，能长时间沉浸在单一任务中","独立自主，不依赖外部反馈来维持动力","不盲从潮流，有自己的内在判断标准","内心世界丰富，自得其乐"],
+    weaknesses: ["社交参与度低，容易被忽视","对外部刺激过于敏感，容易感到\"太吵了\"","在需要主动展示自己的场合可能吃亏","动力来源偏弱，有时难以启动行动"],
+    careers: ["编程/开发", "研究", "工艺/手作", "图书/档案管理", "数据分析"],
+    mbti: "ISTP / INTP",
+    color: "#a0a8b0"
+  },
+  Ns: {
+    name: "雨层云", sub: "深沉滋养者", emoji: "🌧️",
+    family: "低云族 · 务实行动者",
+    tagline: "唯一以\"给予\"为核心定义——用绵长的雨水滋养万物。",
+    overview: "雨层云是云中最厚的一种，垂直厚度可达数千米，只为了一件事：下雨。它不爆发、不喧嚣，却以最持久的方式滋养大地。雨层云型人格通过付出来获得意义感——他们的情感世界极其丰富深沉，而这份深沉正是他们创造力和共情力的源泉。",
+    strengths: ["深度共情能力，能理解人性最脆弱的部分","创造力源于真情实感，作品有打动人的力量","真诚持久，在关系中不设防","善于倾听和陪伴，是别人\"最安心的去处\""],
+    weaknesses: ["情感负担过重，容易内耗","容易陷入反刍思维和低落情绪","边界感不强，可能被他人情绪淹没","有时显得过于沉重，让人有压力"],
+    careers: ["写作/文学", "音乐/艺术", "社会工作", "心理咨询", "护理"],
+    mbti: "INFP / ISFP",
+    color: "#5a7a9a"
+  },
+  Cu: {
+    name: "积云", sub: "快乐棉花糖", emoji: "☀️",
+    family: "直展云族 · 强烈表达者",
+    tagline: "每个人童年画的第一朵云——灿烂、蓬松、活在当下。",
+    overview: "积云靠地面的热力对流形成——热空气上升，水汽凝结成蓬松的白色云朵。积云的生命只有5-30分钟，但它不为此焦虑。积云型人格被积极情绪驱动——他们的快乐不是努力的成果，而是默认状态。他们活在当下，因为当下已经足够精彩。",
+    strengths: ["感染力极强，是团队的\"气氛发动机\"","行动迅速，不纠结不拖延","乐观积极，天然的\"压力缓解器\"","幽默风趣，善于化解尴尬"],
+    weaknesses: ["缺乏长期规划，容易随性而为","注意力容易分散，难以聚焦","有时显得过于肤浅，回避深度","冒失冲动，做了再想的代价偶尔很高"],
+    careers: ["销售/BD", "演艺/主持", "活动策划", "旅游/酒店", "服务行业"],
+    mbti: "ESFP / ESFJ",
+    color: "#f0c040"
+  },
+  Cb: {
+    name: "积雨云", sub: "雷霆领袖", emoji: "⚡",
+    family: "直展云族 · 强烈表达者",
+    tagline: "唯一能产生闪电的云——能量大到要么创造，要么毁灭。",
+    overview: "积雨云是云中的王者，垂直发展贯穿整个对流层，内部能量相当于一颗原子弹。但它既是破坏力最强的云，也是地球最重要的淡水供给者。积雨云型人格拥有巨大的能量储备——如果得到引导，他们能推动变革、创造奇迹；如果失控，则会伤害自己和周围的人。",
+    strengths: ["天生领袖气质，能凝聚和驱动团队","决断力强，关键时刻敢于拍板","强大的执行力和推动力","战略视野与行动力兼备"],
+    weaknesses: ["控制欲强，不擅长放权","情绪爆发力大，可能伤害身边的人","不善于妥协，容易非黑即白","需要大量自我觉察来驾驭自己的能量"],
+    careers: ["CEO/管理", "创业", "导演/制片", "军事/应急", "政治/公共事务"],
+    mbti: "ENTJ / ESTP",
+    color: "#c04040"
+  }
+};
+
+// ── State ──
+let currentQ = 0;
+let answers = {};
+let shuffled = [];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  shuffled = shuffle(questions.map((_, i) => i));
+  currentQ = 0;
+  answers = {};
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const idx = shuffled[currentQ];
+  const q = questions[idx];
+  document.getElementById('qNum').textContent = `第 ${currentQ + 1} / ${questions.length} 题`;
+  document.getElementById('qText').textContent = q.text;
+  document.getElementById('progress').style.width = ((currentQ / questions.length) * 100) + '%';
+  document.getElementById('nextBtn').style.display = answers[idx] !== undefined ? 'inline-block' : 'none';
+  document.getElementById('navHint').textContent = answers[idx] !== undefined ? '已选择，点击下一题' : '请选择一个选项';
+
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  const labels = [
+    { num:'1', txt:'完全不像我' },
+    { num:'2', txt:'不太像我' },
+    { num:'3', txt:'有点像我' },
+    { num:'4', txt:'很像我' },
+    { num:'5', txt:'完全就是我' },
+  ];
+  labels.forEach((l, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    if (answers[idx] === i + 1) btn.classList.add('selected');
+    btn.innerHTML = `<span class="num">${l.num}</span><span class="label">${l.txt}</span>`;
+    btn.onclick = () => selectAnswer(idx, i + 1);
+    opts.appendChild(btn);
+  });
+}
+
+function selectAnswer(qIdx, score) {
+  answers[qIdx] = score;
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('navHint').textContent = '已选择，点击下一题';
+  document.querySelectorAll('.opt-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i + 1 === score);
+  });
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showLoading();
+  } else {
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function showLoading() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  setTimeout(showResult, 1200);
+}
+
+function showResult() {
+  document.getElementById('loading').style.display = 'none';
+
+  // Calculate scores
+  const scores = {};
+  for (const [idx, score] of Object.entries(answers)) {
+    const type = questions[parseInt(idx)].type;
+    scores[type] = (scores[type] || 0) + score;
+  }
+
+  // Max possible per type = 3 questions × 5 = 15
+  const maxPer = 15;
+  const pct = {};
+  for (const [t, s] of Object.entries(scores)) {
+    pct[t] = Math.round((s / maxPer) * 100);
+  }
+
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const topType = sorted[0][0];
+  const secType = sorted[1] ? sorted[1][0] : null;
+  const data = typeData[topType];
+
+  const resultDiv = document.getElementById('result');
+  resultDiv.style.display = 'block';
+
+  const secHtml = secType && sorted[1][1] >= sorted[0][1] * 0.75
+    ? `<div class="sec-type">你的次高云型是 <strong>${typeData[secType].emoji} ${typeData[secType].name}·${typeData[secType].sub}</strong>（得分接近，可能是混合型人格）</div>`
+    : '';
+
+  // Build score list
+  const scoreListHtml = sorted.map(([t, s]) => {
+    const isTop = t === topType;
+    return `<div class="score-row">
+      <span class="s-name">${typeData[t].emoji} ${typeData[t].name}</span>
+      <span class="s-bar-wrap"><span class="s-bar${isTop ? ' top' : ''}" style="width:${pct[t]}%"></span></span>
+      <span class="s-val">${pct[t]}%</span>
+    </div>`;
+  }).join('');
+
+  resultDiv.innerHTML = `
+    <div class="type-header">
+      <div class="type-emoji">${data.emoji}</div>
+      <div class="type-name">${data.name} · ${data.sub}</div>
+      <div class="type-subtitle">${data.family}</div>
+      <div class="type-tagline">${data.tagline}</div>
+    </div>
+
+    <div class="result-sections">
+      <div class="result-card">
+        <h3>☁️ 气质画像</h3>
+        <p>${data.overview}</p>
+      </div>
+
+      <div class="result-card">
+        <h3>✅ 优势</h3>
+        <ul>${data.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
+      </div>
+
+      <div class="result-card">
+        <h3>⚠️ 盲区</h3>
+        <ul>${data.weaknesses.map(s => `<li>${s}</li>`).join('')}</ul>
+      </div>
+
+      <div class="result-card">
+        <h3>💼 适合领域</h3>
+        <div class="tag-row">${data.careers.map(c => `<span class="tag">${c}</span>`).join('')}</div>
+      </div>
+
+      <div class="mbti-ref">🧩 MBTI 大致参考：<strong>${data.mbti}</strong></div>
+    </div>
+
+    ${secHtml}
+
+    <div class="detail-toggle">
+      <button onclick="toggleScores()">查看各型得分 ▼</button>
+    </div>
+    <div id="scoreDetail" style="display:none; margin-top:12px;">
+      <div class="score-list">${scoreListHtml}</div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn" onclick="copyResult('${topType}')">📋 复制结果</button>
+      <button class="btn outline" onclick="retake()">🔄 重新测试</button>
+    </div>
+  `;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Save for share
+  resultDiv._topType = topType;
+}
+
+function toggleScores() {
+  const el = document.getElementById('scoreDetail');
+  const btn = document.querySelector('.detail-toggle button');
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    btn.textContent = '收起得分详情 ▲';
+    // Animate bars
+    setTimeout(() => {
+      el.querySelectorAll('.s-bar').forEach(b => {
+        b.style.width = b.style.width; // trigger layout
+      });
+    }, 50);
+  } else {
+    el.style.display = 'none';
+    btn.textContent = '查看各型得分 ▼';
+  }
+}
+
+function copyResult(topType) {
+  const data = typeData[topType];
+  const text = `☁️ 我的云型人格：${data.name} · ${data.sub}
+
+${data.emoji} ${data.tagline}
+
+✅ 优势：${data.strengths.slice(0,3).join('；')}
+💼 适合领域：${data.careers.join('、')}
+🧩 MBTI 参考：${data.mbti}
+
+—— 云型人格测试 CTPI`;
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('结果已复制到剪贴板！可以分享给朋友了 ☁️');
+    });
+  } else {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('结果已复制到剪贴板！');
+  }
+}
+
+function retake() {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('intro').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Init
+document.getElementById('quiz').style.display = 'none';
+document.getElementById('loading').style.display = 'none';
+document.getElementById('result').style.display = 'none';
+</script>
+</body>
+</html>
