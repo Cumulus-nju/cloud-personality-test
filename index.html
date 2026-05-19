@@ -327,7 +327,6 @@ const questions = [
 // ── Type Data ──
 const typeData = {
   Ci: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Cirrus_Clouds_over_Golden_Gate_Bridge.JPG?width=600",
     name: "卷云", sub: "天际旅人", emoji: "☁️",
     family: "高云族 · 抽象思维者",
     tagline: "活在精神世界里的人——对意义上瘾，对规矩过敏。",
@@ -339,7 +338,6 @@ const typeData = {
     color: "#7c8eb4"
   },
   Cc: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Cirrocumulus_clouds_in_France.jpg?width=600",
     name: "卷积云", sub: "秩序编织者", emoji: "📐",
     family: "高云族 · 抽象思维者",
     tagline: "大脑自带分类系统——靠规律和精确来理解世界。",
@@ -351,7 +349,6 @@ const typeData = {
     color: "#5b9bb5"
   },
   Cs: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Cirrostratus_clouds_over_Tokyo.jpg?width=600",
     name: "卷层云", sub: "温柔面纱", emoji: "🌙",
     family: "高云族 · 抽象思维者",
     tagline: "像一层透明的薄纱覆盖天空——不发光，但能让别人的光折射成最美的晕。",
@@ -363,7 +360,6 @@ const typeData = {
     color: "#c4a0b8"
   },
   Ac: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Altocumulus_clouds_2.JPG?width=600",
     name: "高积云", sub: "多变诗人", emoji: "🎭",
     family: "中云族 · 平衡实践者",
     tagline: "永远在变形状的云——今天是羊群，明天是城堡，后天又成了浪花。",
@@ -375,7 +371,6 @@ const typeData = {
     color: "#e8a050"
   },
   As: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Altostratus_clouds.jpg?width=600",
     name: "高层云", sub: "沉静守望者", emoji: "🏔️",
     family: "中云族 · 平衡实践者",
     tagline: "最沉默的云，也是最稳的云——不说话，但什么都知道。",
@@ -387,7 +382,6 @@ const typeData = {
     color: "#6b8a9e"
   },
   Sc: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Stratocumulus_clouds.jpg?width=600",
     name: "层积云", sub: "可靠基石", emoji: "🛡️",
     family: "低云族 · 务实行动者",
     tagline: "不惊艳，但不可或缺——天空中最常见的云，也是最重要的背景。",
@@ -399,7 +393,6 @@ const typeData = {
     color: "#b8a080"
   },
   St: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Stratus_clouds.jpg?width=600",
     name: "层云", sub: "安静雾霭", emoji: "🌫️",
     family: "低云族 · 务实行动者",
     tagline: "世界上唯一触手可及的云——也是最低调的那一朵。",
@@ -411,7 +404,6 @@ const typeData = {
     color: "#a0a8b0"
   },
   Ns: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Nimbostratus_clouds.jpg?width=600",
     name: "雨层云", sub: "深沉滋养者", emoji: "🌧️",
     family: "低云族 · 务实行动者",
     tagline: "唯一以\"给予\"为核心定义——用绵长的雨水滋养万物。",
@@ -423,7 +415,6 @@ const typeData = {
     color: "#5a7a9a"
   },
   Cu: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Cumulus_congestus_cloud.jpg?width=600",
     name: "积云", sub: "快乐棉花糖", emoji: "☀️",
     family: "直展云族 · 强烈表达者",
     tagline: "每个人童年画的第一朵云——灿烂、蓬松、活在当下。",
@@ -435,7 +426,6 @@ const typeData = {
     color: "#f0c040"
   },
   Cb: {
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Cumulonimbus_cloud.jpg?width=600",
     name: "积雨云", sub: "雷霆领袖", emoji: "⚡",
     family: "直展云族 · 强烈表达者",
     tagline: "唯一能产生闪电的云——能量大到要么创造，要么毁灭。",
@@ -447,6 +437,133 @@ const typeData = {
     color: "#c04040"
   }
 };
+
+// ── Cloud SVG Illustrations ──
+// Each SVG captures the characteristic visual appearance of the WMO cloud genus
+const cloudSVGs = {
+  Ci: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#8CB8D8"/>
+    <g stroke="white" fill="none" stroke-linecap="round">
+      <path d="M15,35 Q80,25 150,40 Q200,48 260,30 Q320,15 385,35" stroke-width="2.5" opacity="0.9"/>
+      <path d="M40,52 Q110,42 180,55 Q230,60 290,48" stroke-width="2" opacity="0.8"/>
+      <path d="M70,68 Q130,56 200,68 Q250,72 330,62" stroke-width="1.8" opacity="0.7"/>
+      <path d="M8,28 Q60,20 120,32" stroke-width="1.2" opacity="0.6"/>
+      <path d="M250,22 Q330,10 392,28" stroke-width="1.2" opacity="0.6"/>
+      <path d="M100,80 Q160,70 220,78" stroke-width="1" opacity="0.4"/>
+    </g>
+  </svg>`,
+  Cc: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#8BB8D8"/>
+    <g fill="white" opacity="0.85">
+      <circle cx="40" cy="70" r="12"/><circle cx="80" cy="65" r="10"/>
+      <circle cx="120" cy="72" r="13"/><circle cx="160" cy="63" r="9"/>
+      <circle cx="200" cy="70" r="11"/><circle cx="240" cy="68" r="12"/>
+      <circle cx="280" cy="64" r="10"/><circle cx="320" cy="73" r="11"/>
+      <circle cx="360" cy="67" r="9"/>
+      <circle cx="60" cy="95" r="11"/><circle cx="100" cy="90" r="13"/>
+      <circle cx="140" cy="98" r="10"/><circle cx="180" cy="92" r="12"/>
+      <circle cx="220" cy="94" r="11"/><circle cx="260" cy="90" r="9"/>
+      <circle cx="300" cy="97" r="13"/><circle cx="340" cy="91" r="10"/>
+      <circle cx="80" cy="120" r="12"/><circle cx="130" cy="115" r="10"/>
+      <circle cx="180" cy="122" r="11"/><circle cx="230" cy="116" r="12"/>
+      <circle cx="280" cy="120" r="10"/><circle cx="330" cy="118" r="11"/>
+    </g>
+  </svg>`,
+  Cs: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#B0B8C8"/>
+    <rect width="400" height="200" fill="white" opacity="0.25"/>
+    <ellipse cx="200" cy="90" rx="60" ry="50" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="4"/>
+    <ellipse cx="200" cy="90" rx="48" ry="38" fill="none" stroke="rgba(255,255,240,0.3)" stroke-width="8"/>
+    <ellipse cx="200" cy="90" rx="34" ry="26" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+  </svg>`,
+  Ac: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#7BA8C8"/>
+    <g fill="white" opacity="0.85">
+      <ellipse cx="60" cy="80" rx="40" ry="25"/>
+      <ellipse cx="140" cy="70" rx="45" ry="28"/>
+      <ellipse cx="230" cy="75" rx="38" ry="22"/>
+      <ellipse cx="320" cy="82" rx="42" ry="26"/>
+      <ellipse cx="90" cy="120" rx="44" ry="24"/>
+      <ellipse cx="180" cy="125" rx="40" ry="30"/>
+      <ellipse cx="270" cy="115" rx="48" ry="26"/>
+      <ellipse cx="350" cy="122" rx="35" ry="22"/>
+    </g>
+  </svg>`,
+  As: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#7A8EA0"/>
+    <rect width="400" height="200" fill="#99A8B5" opacity="0.6"/>
+    <g stroke="#8898A5" stroke-width="0.5" opacity="0.3">
+      <line x1="0" y1="40" x2="400" y2="38"/>
+      <line x1="0" y1="60" x2="400" y2="62"/>
+      <line x1="0" y1="80" x2="400" y2="78"/>
+      <line x1="0" y1="100" x2="400" y2="103"/>
+      <line x1="0" y1="120" x2="400" y2="118"/>
+      <line x1="0" y1="140" x2="400" y2="142"/>
+      <line x1="0" y1="160" x2="400" y2="158"/>
+    </g>
+  </svg>`,
+  Sc: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#90A0B0"/>
+    <g fill="#C8D0D8" opacity="0.85">
+      <ellipse cx="50" cy="110" rx="55" ry="35"/>
+      <ellipse cx="130" cy="105" rx="50" ry="38"/>
+      <ellipse cx="210" cy="112" rx="58" ry="32"/>
+      <ellipse cx="300" cy="108" rx="52" ry="36"/>
+      <ellipse cx="370" cy="113" rx="48" ry="33"/>
+    </g>
+  </svg>`,
+  St: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#9AA8B4"/>
+    <rect x="0" y="130" width="400" height="70" fill="#B8C0C8" opacity="0.9"/>
+    <rect x="0" y="145" width="400" height="55" fill="#C4C8CC" opacity="0.5"/>
+    <g fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1">
+      <path d="M0,135 Q100,130 200,138 Q300,145 400,133"/>
+      <path d="M0,150 Q120,145 240,152 Q340,158 400,148"/>
+    </g>
+  </svg>`,
+  Ns: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#506070"/>
+    <rect x="0" y="30" width="400" height="170" fill="#3A4A58" opacity="0.8"/>
+    <g stroke="#708090" stroke-width="1.5" opacity="0.6" stroke-linecap="round">
+      <line x1="80" y1="60" x2="75" y2="140"/>
+      <line x1="120" y1="55" x2="115" y2="145"/>
+      <line x1="160" y1="50" x2="158" y2="150"/>
+      <line x1="200" y1="58" x2="198" y2="138"/>
+      <line x1="240" y1="52" x2="238" y2="148"/>
+      <line x1="280" y1="62" x2="282" y2="142"/>
+      <line x1="320" y1="48" x2="318" y2="150"/>
+      <line x1="100" y1="70" x2="95" y2="130"/>
+      <line x1="140" y1="65" x2="142" y2="135"/>
+      <line x1="260" y1="58" x2="258" y2="146"/>
+    </g>
+  </svg>`,
+  Cu: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#4A90D9"/>
+    <g>
+      <ellipse cx="180" cy="135" rx="100" ry="50" fill="white"/>
+      <ellipse cx="230" cy="120" rx="85" ry="55" fill="white"/>
+      <ellipse cx="200" cy="100" rx="70" ry="45" fill="white"/>
+      <ellipse cx="150" cy="122" rx="55" ry="40" fill="white"/>
+      <rect x="75" y="132" width="250" height="55" fill="white"/>
+    </g>
+  </svg>`,
+  Cb: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#3A5070"/>
+    <ellipse cx="200" cy="55" rx="110" ry="22" fill="#4A6078" opacity="0.9"/>
+    <ellipse cx="200" cy="30" rx="80" ry="18" fill="#556878" opacity="0.8"/>
+    <rect x="90" y="120" width="220" height="80" fill="#2A3A4A" rx="4"/>
+    <ellipse cx="180" cy="90" rx="70" ry="55" fill="#3A4A5A"/>
+    <ellipse cx="215" cy="65" rx="55" ry="45" fill="#4A5A68"/>
+    <polygon points="225,125 215,100 230,100 220,78" fill="#FFD040"/>
+  </svg>`
+};
+
+// Populate image data URIs
+(function() {
+  for (const [key, svg] of Object.entries(cloudSVGs)) {
+    typeData[key].image = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg.replace(/\n\s*/g, ''));
+  }
+})();
 
 // ── State ──
 let currentQ = 0;
@@ -596,8 +713,8 @@ function showResult() {
     </div>
 
     <div class="cloud-image-wrap">
-      <img src="${data.image}" alt="${data.name}" onerror="this.parentElement.style.display='none'" loading="lazy">
-      <span class="img-credit">📷 国际云图集 / Wikimedia</span>
+      <img src="${data.image}" alt="${data.name}" loading="lazy">
+      <span class="img-credit">🎨 云型手绘示意图</span>
     </div>
 
     <div class="result-sections">
@@ -730,8 +847,8 @@ function browseType(typeKey) {
     </div>
 
     <div class="cloud-image-wrap">
-      <img src="${data.image}" alt="${data.name}" onerror="this.parentElement.style.display='none'" loading="lazy">
-      <span class="img-credit">📷 国际云图集 / Wikimedia</span>
+      <img src="${data.image}" alt="${data.name}" loading="lazy">
+      <span class="img-credit">🎨 云型手绘示意图</span>
     </div>
 
     <div class="result-sections">
