@@ -250,7 +250,7 @@ body {
     <p class="subtitle">Cloud Type Personality Inventory</p>
     <p class="info">
       基于 WMO 国际云图集的<span>十属云分类</span>，用天空的语言解读性格。<br>
-      共 <span>30 题</span>，约需 <span>3 分钟</span>。
+      共 <span>40 题</span>，约需 <span>4 分钟</span>。
     </p>
     <button class="btn" onclick="startQuiz()">开始测试</button>
   </div>
@@ -280,44 +280,54 @@ body {
 </div>
 
 <script>
-// ── Questions (30 items, 3 per type) ──
+// ── Questions (40 items, 4 per type) ──
 const questions = [
+  { text: "我能盯着天空发呆很久——看云的变化比刷手机有意思。", type: "Ci" },
   // Ci 卷云
   { text: "我经常沉浸在自己的精神世界里，以至于忘了周围发生的事。", type: "Ci" },
   { text: "规则和条条框框让我感到束缚，我渴望自由。", type: "Ci" },
   { text: "比起具体的技能，我对人生意义和哲学问题更感兴趣。", type: "Ci" },
+  { text: "天气预报里出现「局部地区有雨」这种模糊说法，会让我有点不舒服。", type: "Cc" },
   // Cc 卷积云
   { text: "我的文件、桌面、日程都有严格的分类和规划。", type: "Cc" },
   { text: "做决定前，我需要收集足够信息，模糊的状态让我不安。", type: "Cc" },
   { text: "发现逻辑错误或不精确的表述时，我很难忍住不指出来。", type: "Cc" },
+  { text: "一场温柔的细雨比烈日更让我感到内心平静。", type: "Cs" },
   // Cs 卷层云
   { text: "我能敏锐察觉房间里的气氛变化，并下意识想缓和它。", type: "Cs" },
   { text: "看到别人难过，我的情绪也会被深深牵动。", type: "Cs" },
   { text: "在冲突中我往往选择退让来维持和谐，即使自己受点委屈。", type: "Cs" },
+  { text: "我的兴趣爱好像天气一样多变——身边的人对此早已习以为常。", type: "Ac" },
   // Ac 高积云
   { text: "我的兴趣变得很快，上个月痴迷的，这个月可能就没什么热情了。", type: "Ac" },
   { text: "我对太多事情感到好奇，以至于很难在一个领域深耕下去。", type: "Ac" },
   { text: "在朋友眼里，我什么都懂一点，但什么都不太精。", type: "Ac" },
+  { text: "做重大决定前，我需要一段「酝酿期」，就像暴雨前空气在安静地积蓄能量。", type: "As" },
   // As 高层云
   { text: "在讨论中我不急于发言，但一旦开口，通常已经想得很清楚了。", type: "As" },
   { text: "我做决定很慢，但一旦做出就几乎不会反悔。", type: "As" },
   { text: "遇到突发情况时，我是周围人中最先冷静下来的那个。", type: "As" },
+  { text: "就像每天看天气预报决定穿什么，我做事讲究固定的节奏和规律。", type: "Sc" },
   // Sc 层积云
   { text: "别人交代我的事，不需要提醒，我一定会按时完成。", type: "Sc" },
   { text: "比起冒险和变革，我更喜欢稳定可预期的节奏。", type: "Sc" },
   { text: "在团队里我不是最耀眼的，但别人会觉得「有你在就放心」。", type: "Sc" },
+  { text: "阴天让我感到安心，连续的大晴天反而会让我有点莫名的焦虑。", type: "St" },
   // St 层云
   { text: "热闹的社交场合对我是一种消耗，独处才是我恢复能量的方式。", type: "St" },
   { text: "我不追逐潮流和热门，守着自己喜欢的小世界就很满足。", type: "St" },
   { text: "在群体中我常常是沉默的那一个，但我并不因此不自在。", type: "St" },
+  { text: "一场持续的小雨可以改变我整天的状态——往好的方向。", type: "Ns" },
   // Ns 雨层云
   { text: "我很容易被艺术作品中的悲伤所触动。", type: "Ns" },
   { text: "朋友常说我是很好的倾听者，愿意在我面前流露脆弱。", type: "Ns" },
   { text: "创作（写作/绘画/音乐等）是我表达内心深处情感的主要出口。", type: "Ns" },
+  { text: "我是那种会在夏天的暴雨里冲出去踩水坑的人。", type: "Cu" },
   // Cu 积云
   { text: "朋友们觉得有我在就不会冷场，我是那个带动气氛的人。", type: "Cu" },
   { text: "我相信「先做再说」，过度思考只会让机会溜走。", type: "Cu" },
   { text: "我的情绪来得快去得也快，不太会记仇。", type: "Cu" },
+  { text: "听到雷暴预警，我的第一反应不是害怕，而是兴奋。", type: "Cb" },
   // Cb 积雨云
   { text: "在群体中我倾向于主导方向，不太放心让别人做关键决定。", type: "Cb" },
   { text: "我生气的时候，情绪的强度让周围人都能感受到。", type: "Cb" },
@@ -541,8 +551,8 @@ function showResult() {
     scores[type] = (scores[type] || 0) + score;
   }
 
-  // Max possible per type = 3 questions × 5 = 15
-  const maxPer = 15;
+  // Max possible per type = 4 questions × 5 = 20
+  const maxPer = 20;
   const pct = {};
   for (const [t, s] of Object.entries(scores)) {
     pct[t] = Math.round((s / maxPer) * 100);
