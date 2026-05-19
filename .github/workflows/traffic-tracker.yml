@@ -17,13 +17,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           REPO="${{ github.repository }}"
 
-          # Fetch latest 14-day data from GitHub API
-          VIEWS=$(gh api "repos/$REPO/traffic/views" --jq '.views')
-          CLONES=$(gh api "repos/$REPO/traffic/clones" --jq '.clones')
-          REFERRERS=$(gh api "repos/$REPO/traffic/popular/referrers" --jq '.')
-          PATHS=$(gh api "repos/$REPO/traffic/popular/paths" --jq '.')
+          # Fetch API data safely (return [] on any failure)
+          fetch_traffic() {
+            gh api "repos/$REPO/traffic/$1" --jq "${2:-.}" 2>/dev/null || echo '[]'
+          }
+
+          VIEWS=$(fetch_traffic views '.views // []')
+          CLONES=$(fetch_traffic clones '.clones // []')
+          REFERRERS=$(fetch_traffic 'popular/referrers' '. // []')
+          PATHS=$(fetch_traffic 'popular/paths' '. // []')
+
+          # Validate JSON
+          for val in VIEWS CLONES REFERRERS PATHS; do
+            echo "${!val}" | jq '.' > /dev/null 2>&1 || eval "$val='[]'"
+          done
 
           # Read existing cumulative data
           if [ -f data/traffic.json ]; then
@@ -42,8 +52,10 @@ jobs:
               clones: ($newClones + .clones | unique_by(.timestamp)),
               referrers: $newReferrers,
               paths: $newPaths,
-              updated_at: now | todateiso8601
+              updated_at: now | todate
             }' > data/traffic.json
+
+          echo "Saved: $(wc -c < data/traffic.json) bytes"
 
       - name: Commit and push
         run: |
