@@ -166,26 +166,46 @@ body {
 }
 .btn.back:hover { background: rgba(90,122,138,0.06); border-color: #b0c0cc; }
 
-/* cloud image */
+/* cloud image carousel */
 .cloud-image-wrap {
   margin: 0 -32px 20px -32px;
   position: relative;
   overflow: hidden;
+  background: #eef2f6;
 }
 .cloud-image-wrap img {
-  width: 100%; height: 240px;
-  object-fit: cover;
+  width: 100%; height: auto;
   display: block;
 }
-.cloud-image-wrap .img-credit {
-  position: absolute; bottom: 6px; right: 12px;
-  font-size: 10px; color: rgba(255,255,255,0.8);
-  background: rgba(0,0,0,0.35);
-  padding: 2px 8px; border-radius: 10px;
+.cloud-image-wrap .img-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,0.82); border: none;
+  cursor: pointer; font-size: 18px; color: #5a7a8a;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2; transition: all 0.2s; line-height: 1;
+}
+.cloud-image-wrap .img-nav:hover { background: #fff; }
+.cloud-image-wrap .img-nav.prev { left: 10px; }
+.cloud-image-wrap .img-nav.next { right: 10px; }
+.cloud-image-wrap .img-dots {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 2;
+}
+.cloud-image-wrap .img-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(255,255,255,0.55); border: none;
+  cursor: pointer; padding: 0; transition: all 0.2s;
+}
+.cloud-image-wrap .img-dot.active { background: #fff; }
+.cloud-image-wrap .img-counter {
+  position: absolute; top: 8px; right: 12px;
+  font-size: 11px; color: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.4); padding: 2px 8px;
+  border-radius: 10px; z-index: 2;
 }
 @media (max-width: 480px) {
   .cloud-image-wrap { margin: 0 -18px 16px -18px; }
-  .cloud-image-wrap img { height: 180px; }
 }
 
 /* type gallery */
@@ -450,10 +470,64 @@ const typeData = {
 
 // Set cloud type images to local photos
 (function() {
-  for (const key of Object.keys(typeData)) {
-    typeData[key].image = 'images/' + key + '.jpg';
+  const imgCounts = { Ci:3, Cc:3, Cs:3, Ac:3, As:3, Sc:3, St:3, Ns:2, Cu:3, Cb:2 };
+  for (const [key, count] of Object.entries(imgCounts)) {
+    typeData[key].images = [];
+    for (let i = 1; i <= count; i++) {
+      typeData[key].images.push('images/' + key + '-' + i + '.jpg');
+    }
   }
 })();
+
+// Image carousel state & helpers
+window._ctpiImgIdx = {};
+
+function renderImageCarousel(key) {
+  const data = typeData[key];
+  const images = data.images;
+  const idx = window._ctpiImgIdx[key] || 0;
+  const count = images.length;
+  let dots = '';
+  for (let i = 0; i < count; i++) {
+    dots += '<button class="img-dot' + (i === idx ? ' active' : '') + '" onclick="setImage(\'' + key + '\',' + i + ')"></button>';
+  }
+  let nav = '';
+  if (count > 1) {
+    nav = '<button class="img-nav prev" onclick="prevImage(\'' + key + '\')">◂</button>' +
+          '<button class="img-nav next" onclick="nextImage(\'' + key + '\')">▸</button>' +
+          '<div class="img-dots">' + dots + '</div>';
+  }
+  return '<div class="cloud-image-wrap" id="imgwrap-' + key + '">' +
+    '<img src="' + images[idx] + '" alt="' + data.name + '">' +
+    '<span class="img-counter">' + (idx + 1) + ' / ' + count + '</span>' +
+    nav + '</div>';
+}
+
+function nextImage(key) {
+  const images = typeData[key].images;
+  let idx = (window._ctpiImgIdx[key] || 0) + 1;
+  if (idx >= images.length) idx = 0;
+  updateImage(key, idx);
+}
+function prevImage(key) {
+  const images = typeData[key].images;
+  let idx = (window._ctpiImgIdx[key] || 0) - 1;
+  if (idx < 0) idx = images.length - 1;
+  updateImage(key, idx);
+}
+function setImage(key, idx) { updateImage(key, idx); }
+function updateImage(key, idx) {
+  window._ctpiImgIdx[key] = idx;
+  const images = typeData[key].images;
+  const wrap = document.getElementById('imgwrap-' + key);
+  if (!wrap) return;
+  const img = wrap.querySelector('img');
+  if (img) img.src = images[idx];
+  const counter = wrap.querySelector('.img-counter');
+  if (counter) counter.textContent = (idx + 1) + ' / ' + images.length;
+  const dots = wrap.querySelectorAll('.img-dot');
+  dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+}
 
 // ── State ──
 let currentQ = 0;
@@ -602,10 +676,7 @@ function showResult() {
       <div class="type-tagline">${data.tagline}</div>
     </div>
 
-    <div class="cloud-image-wrap">
-      <img src="${data.image}" alt="${data.name}" loading="lazy">
-      <span class="img-credit">📷 云型实拍照片</span>
-    </div>
+    ${renderImageCarousel(topType)}
 
     <div class="result-sections">
       <div class="result-card">
@@ -736,10 +807,7 @@ function browseType(typeKey) {
       <div class="type-tagline">${data.tagline}</div>
     </div>
 
-    <div class="cloud-image-wrap">
-      <img src="${data.image}" alt="${data.name}" loading="lazy">
-      <span class="img-credit">📷 云型实拍照片</span>
-    </div>
+    ${renderImageCarousel(typeKey)}
 
     <div class="result-sections">
       <div class="result-card">
