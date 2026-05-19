@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>访问统计 · 云型人格测试</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+</script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: system-ui, "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+  min-height: 100vh;
+  color: #2c3e50;
+  padding: 20px;
+  position: relative;
+  background: #e8f0f5;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url(images/bg-campus.webp) center/cover no-repeat;
+  filter: blur(12px) brightness(1.06);
+  z-index: -2;
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(240,245,250,0.62);
+  z-index: -1;
+}
+
+#app {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(24px);
+  border-radius: 28px;
+  box-shadow: 0 8px 48px rgba(70,100,130,0.08);
+  padding: 40px 36px;
+  border: 1px solid rgba(170,205,230,0.3);
+}
+
+header { text-align: center; margin-bottom: 32px; }
+header h1 { font-size: 24px; color: #1a3a4a; margin-bottom: 4px; }
+header .sub { font-size: 13px; color: #8a9aaa; }
+header .updated { font-size: 11px; color: #aab8c4; margin-top: 4px; }
+
+/* Summary cards */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.sum-card {
+  background: rgba(248,252,255,0.65);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  padding: 18px 20px;
+  text-align: center;
+  border: 1px solid rgba(180,205,225,0.22);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.02);
+}
+.sum-card .num {
+  font-size: 32px;
+  font-weight: 700;
+  color: #5b9fd5;
+  line-height: 1.2;
+}
+.sum-card .label {
+  font-size: 12px;
+  color: #7a8a9a;
+  margin-top: 4px;
+}
+
+/* Charts */
+.chart-section { margin-bottom: 28px; }
+.chart-section h2 {
+  font-size: 15px;
+  color: #3a5a6a;
+  margin-bottom: 14px;
+  padding-left: 4px;
+}
+.chart-wrap {
+  background: rgba(248,252,255,0.55);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(180,205,225,0.2);
+  position: relative;
+}
+.chart-wrap canvas { max-height: 320px; }
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr; } }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: #95a5a6;
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; line-height: 1.6; }
+
+/* Back link */
+.back-link {
+  text-align: center;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(180,205,225,0.2);
+}
+.back-link a {
+  color: #5b9bd5;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+.back-link a:hover { color: #3a7ab8; }
+
+/* Loading */
+#loading { text-align: center; padding: 60px 0; }
+#loading .spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(180,205,225,0.3);
+  border-top-color: #5b9bd5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loading p { color: #8a9aaa; font-size: 14px; }
+
+/* Error */
+#error { text-align: center; padding: 40px 0; color: #c0392b; display: none; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <header>
+    <h1>访问统计</h1>
+    <p class="sub">云型人格测试 CTPI</p>
+    <p class="updated" id="updateTime"></p>
+  </header>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>加载统计数据……</p>
+  </div>
+
+  <div id="error">加载失败，请稍后重试。</div>
+
+  <div id="dashboard" style="display:none;">
+    <div class="summary" id="summaryCards"></div>
+
+    <div class="charts-grid">
+      <div class="chart-section">
+        <h2>每日页面浏览量</h2>
+        <div class="chart-wrap"><canvas id="viewsChart"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <h2>每日独立访客</h2>
+        <div class="chart-wrap"><canvas id="uniquesChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <h2>流量来源</h2>
+      <div class="chart-wrap"><canvas id="referrersChart"></canvas></div>
+    </div>
+
+    <div class="back-link">
+      <a href=".">返回测试</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(async function() {
+  const loading = document.getElementById('loading');
+  const error = document.getElementById('error');
+  const dashboard = document.getElementById('dashboard');
+
+  try {
+    const resp = await fetch('data/traffic.json?' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+
+    if (!data.views || data.views.length === 0) {
+      loading.style.display = 'none';
+      dashboard.style.display = 'block';
+      dashboard.innerHTML = '<div class="empty-state"><div class="icon">📊</div><p>数据收集中……<br>GitHub Action 将在每天 UTC 00:07 更新统计数据。<br>明天再来看就有图表啦。</p></div>' +
+        '<div class="back-link"><a href=".">返回测试</a></div>';
+      return;
+    }
+
+    loading.style.display = 'none';
+    document.getElementById('updateTime').textContent =
+      '数据更新于 ' + new Date(data.updated_at).toLocaleString('zh-CN');
+
+    renderSummary(data);
+    renderViewsChart(data);
+    renderUniquesChart(data);
+    renderReferrersChart(data);
+    dashboard.style.display = 'block';
+
+  } catch (e) {
+    loading.style.display = 'none';
+    error.style.display = 'block';
+    error.textContent = '加载失败：' + e.message + '。请稍后刷新重试。';
+  }
+})();
+
+function renderSummary(data) {
+  const views = data.views;
+  const total = views.reduce((s, d) => s + (d.count || 0), 0);
+  const totalUniques = views.reduce((s, d) => s + (d.uniques || 0), 0);
+  const today = views.length > 0 ? views[views.length - 1] : null;
+  const todayCount = today ? today.count : 0;
+  const clonesTotal = data.clones.reduce((s, d) => s + (d.count || 0), 0);
+
+  const cards = [
+    { num: fmt(total), label: '总浏览量 (14天)' },
+    { num: fmt(totalUniques), label: '独立访客 (14天)' },
+    { num: fmt(todayCount), label: '昨日浏览' },
+    { num: fmt(clonesTotal), label: 'Git Clone 数' },
+  ];
+
+  document.getElementById('summaryCards').innerHTML = cards.map(c =>
+    '<div class="sum-card"><div class="num">' + c.num + '</div><div class="label">' + c.label + '</div></div>'
+  ).join('');
+}
+
+function renderViewsChart(data) {
+  const labels = data.views.map(d => fmtDate(d.timestamp));
+  const counts = data.views.map(d => d.count);
+  new Chart(document.getElementById('viewsChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: '浏览量',
+        data: counts,
+        borderColor: '#5b9bd5',
+        backgroundColor: 'rgba(91,155,213,0.08)',
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: '#5b9bd5',
+        borderWidth: 2
+      }]
+    },
+    options: chartOptions()
+  });
+}
+
+function renderUniquesChart(data) {
+  const labels = data.views.map(d => fmtDate(d.timestamp));
+  const counts = data.views.map(d => d.uniques);
+  new Chart(document.getElementById('uniquesChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: '独立访客',
+        data: counts,
+        borderColor: '#7ec8a0',
+        backgroundColor: 'rgba(126,200,160,0.08)',
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: '#7ec8a0',
+        borderWidth: 2
+      }]
+    },
+    options: chartOptions()
+  });
+}
+
+function renderReferrersChart(data) {
+  const referrers = data.referrers || [];
+  const labels = referrers.map(r => r.referrer || '直接访问');
+  const counts = referrers.map(r => r.count);
+  new Chart(document.getElementById('referrersChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '访问量',
+        data: counts,
+        backgroundColor: counts.map((_, i) =>
+          ['rgba(91,155,213,0.7)','rgba(126,180,210,0.6)','rgba(160,200,220,0.5)','rgba(180,210,225,0.5)','rgba(200,215,220,0.4)'][i] || 'rgba(180,205,220,0.4)'
+        ),
+        borderColor: 'rgba(91,155,213,0.8)',
+        borderWidth: 1,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      ...chartOptions(),
+      indexAxis: 'y',
+      plugins: {
+        ...chartOptions().plugins,
+        legend: { display: false }
+      }
+    }
+  });
+}
+
+function chartOptions() {
+  return {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(180,200,215,0.25)' },
+        ticks: { color: '#8a9aaa', font: { size: 11 } },
+        border: { display: false }
+      },
+      y: {
+        grid: { color: 'rgba(180,200,215,0.25)' },
+        ticks: { color: '#8a9aaa', font: { size: 11 }, precision: 0 },
+        border: { display: false },
+        beginAtZero: true
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    }
+  };
+}
+
+function fmtDate(ts) {
+  return new Date(ts).toLocaleDateString('zh-CN', { month:'short', day:'numeric' });
+}
+function fmt(n) {
+  if (n >= 10000) return (n / 10000).toFixed(1) + 'w';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return String(n);
+}
+</script>
+</body>
+</html>
