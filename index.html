@@ -21,7 +21,7 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: url('images/bg-campus.jpg') center/cover no-repeat;
+  background: url('images/bg-campus.webp') center/cover no-repeat;
   filter: blur(12px) brightness(1.06);
   z-index: -2;
 }
@@ -511,13 +511,14 @@ const typeData = {
   }
 };
 
-// Set cloud type images to local photos
+// Set cloud type images to local photos (WebP + JPEG fallback)
 (function() {
   const imgCounts = { Ci:3, Cc:3, Cs:3, Ac:3, As:3, Sc:3, St:3, Ns:2, Cu:3, Cb:2 };
   for (const [key, count] of Object.entries(imgCounts)) {
     typeData[key].images = [];
     for (let i = 1; i <= count; i++) {
-      typeData[key].images.push('images/' + key + '-' + i + '.jpg');
+      const base = 'images/' + key + '-' + i;
+      typeData[key].images.push({ webp: base + '.webp', jpg: base + '.jpg' });
     }
   }
 })();
@@ -530,6 +531,7 @@ function renderImageCarousel(key) {
   const images = data.images;
   const idx = window._ctpiImgIdx[key] || 0;
   const count = images.length;
+  const cur = images[idx];
   let dots = '';
   for (let i = 0; i < count; i++) {
     dots += '<button class="img-dot' + (i === idx ? ' active' : '') + '" onclick="setImage(\'' + key + '\',' + i + ')"></button>';
@@ -541,7 +543,8 @@ function renderImageCarousel(key) {
           '<div class="img-dots">' + dots + '</div>';
   }
   return '<div class="cloud-image-wrap" id="imgwrap-' + key + '">' +
-    '<img src="' + images[idx] + '" alt="' + data.name + '">' +
+    '<picture><source srcset="' + cur.webp + '" type="image/webp">' +
+    '<img src="' + cur.jpg + '" alt="' + data.name + '" loading="lazy" decoding="async"></picture>' +
     '<span class="img-counter">' + (idx + 1) + ' / ' + count + '</span>' +
     nav + '</div>';
 }
@@ -562,10 +565,13 @@ function setImage(key, idx) { updateImage(key, idx); }
 function updateImage(key, idx) {
   window._ctpiImgIdx[key] = idx;
   const images = typeData[key].images;
+  const cur = images[idx];
   const wrap = document.getElementById('imgwrap-' + key);
   if (!wrap) return;
+  const source = wrap.querySelector('source');
+  if (source) source.srcset = cur.webp;
   const img = wrap.querySelector('img');
-  if (img) img.src = images[idx];
+  if (img) img.src = cur.jpg;
   const counter = wrap.querySelector('.img-counter');
   if (counter) counter.textContent = (idx + 1) + ' / ' + images.length;
   const dots = wrap.querySelectorAll('.img-dot');
