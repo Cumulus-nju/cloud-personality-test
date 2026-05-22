@@ -15,47 +15,80 @@ jobs:
 
       - name: Fetch and merge traffic data
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
-          set -euo pipefail
-          REPO="${{ github.repository }}"
+          python3 << 'PYEOF'
+          import json, os, subprocess
+          from datetime import datetime, timezone
 
-          # Fetch API data safely (return [] on any failure)
-          fetch_traffic() {
-            gh api "repos/$REPO/traffic/$1" --jq "${2:-.}" 2>/dev/null || echo '[]'
+          repo = os.environ["REPO"]
+          token = os.environ["GITHUB_TOKEN"]
+
+          def fetch(endpoint, key=None):
+              url = f"https://api.github.com/repos/{repo}/traffic/{endpoint}"
+              r = subprocess.run(
+                  ["curl", "-s", "-w", "\n%{http_code}",
+                   "-H", f"Authorization: Bearer {token}",
+                   "-H", "Accept: application/vnd.github+json",
+                   url],
+                  capture_output=True, text=True, timeout=30
+              )
+              parts = r.stdout.rsplit("\n", 1)
+              body = parts[0] if len(parts) > 1 else ""
+              code = parts[-1].strip() if len(parts) > 1 else "0"
+              if r.returncode != 0 or not code.startswith("2"):
+                  print(f"  [WARN] {endpoint} → HTTP {code}, using []")
+                  return []
+              try:
+                  data = json.loads(body)
+              except json.JSONDecodeError:
+                  print(f"  [WARN] {endpoint} → invalid JSON, using []")
+                  return []
+              if key:
+                  return data.get(key, [])
+              return data if isinstance(data, list) else []
+
+          print("Fetching traffic data...")
+          views = fetch("views", "views")
+          clones = fetch("clones", "clones")
+          referrers = fetch("popular/referrers")
+          paths = fetch("popular/paths")
+          print(f"  views={len(views)} days, clones={len(clones)} days, referrers={len(referrers)}, paths={len(paths)}")
+
+          # Read existing
+          try:
+              with open("data/traffic.json") as f:
+                  existing = json.load(f)
+          except (FileNotFoundError, json.JSONDecodeError):
+              existing = {"views": [], "clones": [], "referrers": [], "paths": []}
+
+          # Merge views by unique timestamp
+          vmap = {v["timestamp"]: v for v in existing.get("views", [])}
+          for v in views:
+              vmap[v["timestamp"]] = v
+          merged_views = sorted(vmap.values(), key=lambda x: x["timestamp"])
+
+          # Merge clones by unique timestamp
+          cmap = {c["timestamp"]: c for c in existing.get("clones", [])}
+          for c in clones:
+              cmap[c["timestamp"]] = c
+          merged_clones = sorted(cmap.values(), key=lambda x: x["timestamp"])
+
+          result = {
+              "views": merged_views,
+              "clones": merged_clones,
+              "referrers": referrers,
+              "paths": paths,
+              "updated_at": datetime.now(timezone.utc).isoformat()
           }
 
-          VIEWS=$(fetch_traffic views '.views // []')
-          CLONES=$(fetch_traffic clones '.clones // []')
-          REFERRERS=$(fetch_traffic 'popular/referrers' '. // []')
-          PATHS=$(fetch_traffic 'popular/paths' '. // []')
+          with open("data/traffic.json", "w") as f:
+              json.dump(result, f, indent=2, ensure_ascii=False)
 
-          # Validate JSON
-          for val in VIEWS CLONES REFERRERS PATHS; do
-            echo "${!val}" | jq '.' > /dev/null 2>&1 || eval "$val='[]'"
-          done
-
-          # Read existing cumulative data
-          if [ -f data/traffic.json ]; then
-            EXISTING=$(cat data/traffic.json)
-          else
-            EXISTING='{"views":[],"clones":[],"referrers":[],"paths":[]}'
-          fi
-
-          # Merge: new data takes precedence for same timestamp
-          echo "$EXISTING" | jq --argjson newViews "$VIEWS" \
-            --argjson newClones "$CLONES" \
-            --argjson newReferrers "$REFERRERS" \
-            --argjson newPaths "$PATHS" \
-            '{
-              views: ($newViews + .views | unique_by(.timestamp)),
-              clones: ($newClones + .clones | unique_by(.timestamp)),
-              referrers: $newReferrers,
-              paths: $newPaths,
-              updated_at: now | todate
-            }' > data/traffic.json
-
-          echo "Saved: $(wc -c < data/traffic.json) bytes"
+          print(f"Saved: {len(merged_views)} view entries, {len(merged_clones)} clone entries")
+          print("Done.")
+          PYEOF
 
       - name: Commit and push
         run: |
